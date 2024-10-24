@@ -1,5 +1,6 @@
 package org.acme.services;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.acme.models.Book;
@@ -15,25 +16,32 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BookService {
     private final BookRepository bookRepository;
+    private final LuceneService luceneService;
 
     @Inject
-    BookService(BookRepository bookRepository) {
+    BookService(BookRepository bookRepository, LuceneService luceneService) {
         this.bookRepository = bookRepository;
+        this.luceneService = luceneService;
     }
 
     @Transactional
     @Startup
-    public void seed() {
-        log.info("Seeding books");  
+    public void seed() throws IOException {
+        log.info("Seeding books");
         long startTime = System.currentTimeMillis();
+
+        luceneService.openWriter();
 
         for (var i = 0; i < 1000000; i++) {
             var book = new Book();
             book.setTitle("Book " + i);
             book.setAuthor("Author " + i);
             persist(book);
+            // luceneService.indexBook(book);
         }
-        
+
+        luceneService.closeWriter();
+
         long endTime = System.currentTimeMillis();
         log.info("Time taken to seed books: {} ms", (endTime - startTime));
         log.info("Seeding books completed");
