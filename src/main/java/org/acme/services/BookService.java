@@ -9,8 +9,10 @@ import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 @ApplicationScoped
+@Slf4j
 public class BookService {
     private final BookRepository bookRepository;
 
@@ -22,35 +24,19 @@ public class BookService {
     @Transactional
     @Startup
     public void seed() {
-        var book = new Book();
-        book.setTitle("The Hobbit");
-        book.setAuthor("J.R.R. Tolkien");
-        persist(book);
+        log.info("Seeding books");  
+        long startTime = System.currentTimeMillis();
 
-        var book2 = new Book();
-        book2.setTitle("1984");
-        book2.setAuthor("George Orwell");
-        persist(book2);
-
-        var book3 = new Book();
-        book3.setTitle("To Kill a Mockingbird");
-        book3.setAuthor("Harper Lee");
-        persist(book3);
-
-        var book4 = new Book();
-        book4.setTitle("Pride and Prejudice");
-        book4.setAuthor("Jane Austen");
-        persist(book4);
-
-        var book5 = new Book();
-        book5.setTitle("The Great Gatsby");
-        book5.setAuthor("F. Scott Fitzgerald");
-        persist(book5);
-
-        var book6 = new Book();
-        book6.setTitle("Moby Dick");
-        book6.setAuthor("Herman Melville");
-        persist(book6);
+        for (var i = 0; i < 1000000; i++) {
+            var book = new Book();
+            book.setTitle("Book " + i);
+            book.setAuthor("Author " + i);
+            persist(book);
+        }
+        
+        long endTime = System.currentTimeMillis();
+        log.info("Time taken to seed books: {} ms", (endTime - startTime));
+        log.info("Seeding books completed");
     }
 
     public List<Book> findAll() {
